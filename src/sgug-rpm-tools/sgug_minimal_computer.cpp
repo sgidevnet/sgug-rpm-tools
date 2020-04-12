@@ -156,19 +156,12 @@ int main(int argc, char**argv)
   special_packages.emplace("rpm");
   special_packages.emplace("sudo");
   special_packages.emplace("vim-minimal");
-  special_packages.emplace("sgug-rpm-tools");
   special_packages.emplace("git-all");
   special_packages.emplace("tar");
   special_packages.emplace("bzip2");
   special_packages.emplace("gzip");
   special_packages.emplace("xz");
   special_packages.emplace("unzip");
-  /*
-  special_packages.emplace("rpm-build");
-  special_packages.emplace("boost-devel");
-  special_packages.emplace("gcc");
-  special_packages.emplace("gcc-c++");
-  */
 
   vector<sgug_rpm::resolvedrpm> resolved_rpms =
     sgug_rpm::flatten_sort_packages( rpms_to_resolve, 
@@ -226,15 +219,29 @@ int main(int argc, char**argv)
   }
 
   // While for remove existing we reverse that to easier remove
+  // First we print a bunch of comments with the package names on a line
+  bool have_rpms_to_remove=false;
   std::reverse(resolved_rpms.begin(), resolved_rpms.end());
   for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
     if( !rrpm.get_special() ) {
+      have_rpms_to_remove=true;
       removeexistingfile << "# Should remove " <<
 	rrpm.get_package().get_name() << " " <<
 	rrpm.get_package().get_rpmfile() << endl;
-      removeexistingfile << "rpm -evh " << rrpm.get_package().get_name() <<
-	endl;
     }
+  }
+  // Now we'll print a big fat long line with all the removes together
+  // (It's quicker/more correct to get rpm to do it all at once.)
+  if( have_rpms_to_remove ) {
+    removeexistingfile << "rpm -evh";
+  }
+  for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
+    if( !rrpm.get_special() ) {
+      removeexistingfile << " " << rrpm.get_package().get_name();
+    }
+  }
+  if( have_rpms_to_remove ) {
+    removeexistingfile << endl;
   }
 
   removeexistingfile.close();
