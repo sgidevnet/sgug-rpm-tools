@@ -1,0 +1,58 @@
+sgcp() {
+        cp -r ~/rpmbuild/sgug-rse/packages/"$1"/* ~/rpmbuild/
+}
+sgwipcp() {
+        cp -r ~/rpmbuild/sgug-rse-wip/packages/"$1"/* ~/rpmbuild/
+}
+sgsbuild() {
+        cd ~/rpmbuild/SPECS
+        TARGET="$(ls -1 ~/rpmbuild/SRPMS/ | grep ${1})"
+        rpm -ivh ~/rpmbuild/SRPMS/${TARGET}
+}
+sgrbuild() {
+        rpmbuild --undefine=_disable_source_fetch -ba ${1}.spec --nocheck
+}
+sggit()  {
+        cd ~/rpmbuild/sgug-rse
+}
+sgspec() {
+        cd ~/rpmbuild/SPECS
+}
+sgsrc()  {
+        cd ~/rpmbuild/SRPMS
+}
+sgwip()  {
+        cd ~/rpmbuild/sgug-rse-wip
+}
+sgtools()  {
+        cd ~/rpmbuild/sgug-rpm-tools
+}
+
+
+sgptools()  {
+        ls -1 ~/rpmbuild/sgug-rpm-tools/packages
+}
+sgpwip()  {
+        ls -1 ~/rpmbuild/sgug-rse-wip/packages
+}
+sgprse()  {
+        ls -1 ~/rpmbuild/sgug-rse/packages
+}
+
+
+
+export -f sgtools
+export -f sgptools
+export -f sgpwip
+export -f sgprse
+export -f sgcp
+export -f sgwipcp
+export -f sgsbuild
+export -f sgrbuild
+export -f sggit
+export -f sgspec
+export -f sgsrc
+export -f sgwip
+
+echo 'setup sg commands from ~/.sgug_bashrc'
+
