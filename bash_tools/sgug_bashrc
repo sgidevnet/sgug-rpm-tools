@@ -1,58 +1,59 @@
 sgcp() {
         cp -r ~/rpmbuild/sgug-rse/packages/"$1"/* ~/rpmbuild/
 }
-sgwipcp() {
-        cp -r ~/rpmbuild/sgug-rse-wip/packages/"$1"/* ~/rpmbuild/
-}
 sgsbuild() {
         cd ~/rpmbuild/SPECS
         TARGET="$(ls -1 ~/rpmbuild/SRPMS/ | grep ${1})"
-        rpm -ivh ~/rpmbuild/SRPMS/${TARGET}
+        rpm -Uvh ~/rpmbuild/SRPMS/${TARGET}
 }
 sgrbuild() {
         rpmbuild --undefine=_disable_source_fetch -ba ${1}.spec --nocheck
 }
 sggit()  {
-        cd ~/rpmbuild/sgug-rse
+        cd ~/rpmbuild/sgug-rsa.git
 }
 sgspec() {
         cd ~/rpmbuild/SPECS
 }
 sgsrc()  {
-        cd ~/rpmbuild/SRPMS
+        cd ~/rpmbuild/SOURCES
 }
-sgwip()  {
-        cd ~/rpmbuild/sgug-rse-wip
+sgsrpm()  {
+        cd ~/rpmbuild/SRPMS
 }
 sgtools()  {
         cd ~/rpmbuild/sgug-rpm-tools
 }
-
-
 sgptools()  {
         ls -1 ~/rpmbuild/sgug-rpm-tools/packages
 }
-sgpwip()  {
-        ls -1 ~/rpmbuild/sgug-rse-wip/packages
-}
-sgprse()  {
-        ls -1 ~/rpmbuild/sgug-rse/packages
+sgwip()  {
+        cd ~/rpmbuild/sgug-rsa.git
+        git checkout wip      
+        ls -1 ~/rpmbuild/sgug-rsa.git/packages
 }
 
-
+parse_git_branch() {
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
 
 export -f sgtools
 export -f sgptools
-export -f sgpwip
-export -f sgprse
 export -f sgcp
-export -f sgwipcp
 export -f sgsbuild
 export -f sgrbuild
 export -f sggit
 export -f sgspec
 export -f sgsrc
+export -f sgsrpm
 export -f sgwip
 
-echo 'setup sg commands from ~/.sgug_bashrc'
+export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+alias ggg='git log -n 25 --pretty=format:"%h - %an, %ar : %s" '
 
+
+cd ~/rpmbuild
+echo `pwd`
+echo ---------------------------------------
+echo 'setup sg commands from ~/.sgug_bashrc'
+echo ---------------------------------------
