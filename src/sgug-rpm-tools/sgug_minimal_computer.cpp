@@ -162,6 +162,7 @@ int main(int argc, char**argv)
   special_packages.emplace("gzip");
   special_packages.emplace("xz");
   special_packages.emplace("unzip");
+  special_packages.emplace("sgug-getopt");
 
   vector<sgug_rpm::resolvedrpm> resolved_rpms =
     sgug_rpm::flatten_sort_packages( rpms_to_resolve, 
