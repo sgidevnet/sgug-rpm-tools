@@ -125,7 +125,14 @@ int main(int argc, char**argv)
   for( const sgug_rpm::specfile & spec : specs_to_rebuild ) {
     const string & name = spec.get_name();
     worldrebuilderfile << "# Must rebuild: " << name << endl;
-    worldrebuilderfile << "rpmbuild -ba " << name << ".spec --nocheck" << endl;
+    worldrebuilderfile << "touch ~/rpmbuild/PROGRESS/" << name << ".start" <<
+      endl;
+    worldrebuilderfile << "rpmbuild -ba " << name << ".spec --nocheck" <<
+      endl;
+    worldrebuilderfile << "if [[ $? -ne 0 ]]; then" << endl;
+    worldrebuilderfile << "  touch ~/rpmbuild/PROGRESS/" << name <<
+      ".failed" << endl;
+    worldrebuilderfile << "fi" << endl;
     worldrebuilderfile << "touch ~/rpmbuild/PROGRESS/" << name << ".done" <<
       endl;
   }
