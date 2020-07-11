@@ -1,0 +1,147 @@
+# sgug_bashrc helper commands
+# andrew_diller 2020
+# use with sugshell hook
+######################################
+# cd helpers
+sgbuild() {
+        cd ~/rpmbuild/BUILD
+}
+sgbroot() {
+        cd ~/rpmbuild/BUILDROOT
+}
+sgrpm()  {
+        cd ~/rpmbuild/RPMS
+}
+sgsrc()  {
+        cd ~/rpmbuild/SOURCES
+}
+sgspec() {
+        cd ~/rpmbuild/SPECS
+}
+sgsrpm()  {
+        cd ~/rpmbuild/SRPMS
+}
+sgrsa()  {
+        cd ~/rpmbuild/sgug-rse.git
+}
+sgtools()  {
+        cd ~/rpmbuild/sgug-rpm-tools.git
+}
+######################################
+# List packages
+sgmaster()  {
+        cd ~/rpmbuild/sgug-rse.git
+        git stash
+        git checkout master      
+        ls -1 ~/rpmbuild/sgug-rse.git/packages
+}
+sgwip()  {
+        cd ~/rpmbuild/sgug-rse.git
+        git stash
+        git checkout wip      
+        ls -1 ~/rpmbuild/sgug-rse.git/packages
+}
+sgcountwip () {
+    sgwip | wc -l
+}
+sgcountmaster () {
+    sgmaster | wc -l
+}
+sgcompare() {
+   echo wait a moment.....
+   sgmaster > /tmp/master-cmp
+   sgwip > /tmp/wip-cmp
+   echo ''
+   echo packages that are in WIP and not in Master:
+   diff <(sort /tmp/wip) <(sort /tmp/master)
+   rm /tmp/master-cmp /tmp/wip-cmp
+   echo ''
+   echo packages that are in WIP and not in Master:
+}
+
+######################################
+# build helpers
+sgcp() {
+        cp -r ~/rpmbuild/sgug-rse.git/packages/"$1"/* ~/rpmbuild/
+}
+sgsbuild() {
+        cd ~/rpmbuild/SPECS
+        TARGET="$(ls -1 ~/rpmbuild/SRPMS/ | grep ${1})"
+        rpm -Uvh ~/rpmbuild/SRPMS/${TARGET}
+}
+sgrbuild() {
+        cd ~/rpmbuild/SPECS
+        rpmbuild --undefine=_disable_source_fetch -ba ${1}.spec --nocheck
+}
+######################################
+# git helpers
+parse_git_branch() {
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+sghelp(){
+
+    cat <<EOF
+#########################
+#                       #
+# SG Helper Commands    #
+#                       #
+# These cd into RPM directories
+sgbuild - moves you into the BUILD
+sgbroot - moves you into the BUILDROOT
+sgrpm - moves you into the rmpbuild RPMS
+sgsrc - moves you into the rmpbuild SOURCES
+sgspec - moves you into the rmpbuild SPEC
+sgsrpm - moves you into the rmpbuild SRPMS
+sgrsa - moves into sgug-rsa.git repo
+sgtools - moves into sgug-rpm-tools.git repo
+
+# These list Packages in master and wip
+sgmaster - lists our all available package names in sgug-rsa.git repo, master branch
+sgwip - moves into sgug-rsa.git repo and checks out wip branch, lists wip package names
+sgcountmaster - show total number of packages in master
+sgcountwip - show total number of packages in wip
+sgcompare - show packages in WIP that are not in master
+
+# These commands take one argument, a package name
+sgcp - copies the argument from sgug-rse git packages dirs into your rpmbuild tree
+sgsbuild - moves you into the SPECS folder and installs the RPM Source package
+sgrbuild - attempts a rpmbuild of the argument using the spce file
+
+
+EOF
+  }
+
+
+# export these functions to ensure they exist in sugshell
+export -f sgbuild
+export -f sgbroot
+export -f sgrpm
+export -f sgsrc
+export -f sgspec
+export -f sgsrpm
+export -f sgrsa
+export -f sgtools
+
+export -f sgmaster
+export -f sgwip
+export -f sgcountmaster
+export -f sgcountwip
+export -f sgcompare
+
+export -f sgcp
+export -f sgsbuild
+export -f sgrbuild
+export -f sghelp
+
+export -f parse_git_branch
+
+# change the prompt to show us the git branch
+export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+alias ggg='git log -n 25 --pretty=format:"%h - %an, %ar : %s" '
+
+# finish up by moving into rpmbuild
+cd ~/rpmbuild
+echo `pwd`
+echo --------------------------------------------
+echo 'setup local sg commands from ~/.sgug_bashrc'
+echo --------------------------------------------
