@@ -7,6 +7,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include <rpm/rpmspec.h>
+
 namespace sgug_rpm {
   class specfile {
   private:
@@ -28,16 +30,20 @@ namespace sgug_rpm {
     const std::unordered_map<std::string,std::vector<std::string>> & get_package_deps() const { return _package_deps; };
   };
 
-  bool read_specfile( const std::string & path, specfile & dest,
+  bool read_specfile( const std::string & path,
+		      rpmSpecFlags flags,
+		      specfile & dest,
 		      sgug_rpm::progress_printer & pprinter );
 
   void read_specfiles( poptcontext_h & popt_context,
 		       const std::vector<std::string> & paths,
+		       rpmSpecFlags flags,
 		       std::vector<specfile> & out_specfiles,
 		       std::vector<std::string> & error_specfiles,
 		       sgug_rpm::progress_printer & pprinter );
 
   void read_rpmbuild_specfiles( sgug_rpm::poptcontext_h & popt_context,
+				rpmSpecFlags flags,
 				std::vector<specfile> & out_specfiles,
 				std::vector<std::string> & error_specfiles,
 				sgug_rpm::progress_printer & pprinter );

@@ -64,10 +64,11 @@ namespace sgug_rpm {
       _packages(packages),
       _package_deps(package_deps) {}
 
-  bool read_specfile( const string & path, specfile & dest,
+  bool read_specfile( const string & path,
+		      rpmSpecFlags flags,
+		      specfile & dest,
 		      progress_printer & pprinter )
   {
-    rpmSpecFlags flags;
     rpmspec_h spec_h( path.c_str(), flags, NULL );
     if( !spec_h.this_spec ) {
       pprinter.reset();
@@ -101,6 +102,7 @@ namespace sgug_rpm {
 
   void read_specfiles( poptcontext_h & popt_context,
 		       const vector<string> & paths,
+		       rpmSpecFlags flags,
 		       vector<specfile> & out_specfiles,
 		       vector<string> & error_specfiles,
 		       progress_printer & pprinter )
@@ -108,7 +110,7 @@ namespace sgug_rpm {
     for( const string & spec_filename : paths ) {
       specfile specfile;
       popt_context.reset_rpm_macros();
-      if( read_specfile(spec_filename, specfile, pprinter) ) {
+      if( read_specfile(spec_filename, flags, specfile, pprinter) ) {
 	out_specfiles.push_back( specfile );
       }
       else {
@@ -120,6 +122,7 @@ namespace sgug_rpm {
   }
 
   void read_rpmbuild_specfiles( poptcontext_h & popt_context,
+				rpmSpecFlags flags,
 				vector<specfile> & out_specfiles,
 				vector<string> & error_specfiles,
 				progress_printer & pprinter )
@@ -142,6 +145,7 @@ namespace sgug_rpm {
     if( found_specpaths.size() > 0 ) {
       read_specfiles( popt_context,
 		      found_specpaths,
+		      flags,
 		      out_specfiles,
 		      error_specfiles,
 		      pprinter );

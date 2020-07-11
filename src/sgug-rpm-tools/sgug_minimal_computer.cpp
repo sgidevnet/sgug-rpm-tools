@@ -67,13 +67,15 @@ int main(int argc, char**argv)
 
   cout << "# Reading spec files..." << endl;
 
+  rpmSpecFlags flags;
+
   if( spec_filenames.size() > 0 ) {
     for( const string & spec_file : spec_filenames ) {
       sgug_rpm::specfile dest;
       // Must reset rpm macros every time to be sure
       // no global are remembered
       popt_context.reset_rpm_macros();
-      if( sgug_rpm::read_specfile( spec_file, dest, pprinter ) ) {
+      if( sgug_rpm::read_specfile( spec_file, flags, dest, pprinter ) ) {
 	valid_specfiles.emplace_back(dest);
       }
       else {
@@ -85,6 +87,7 @@ int main(int argc, char**argv)
   }
   else {
     sgug_rpm::read_rpmbuild_specfiles( popt_context,
+				       flags,
 				       valid_specfiles,
 				       failed_specfiles,
 				       pprinter );

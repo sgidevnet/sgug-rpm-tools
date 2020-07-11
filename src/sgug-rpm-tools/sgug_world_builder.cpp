@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include <optional>
 
 #include <rpm/rpmcli.h>
 #include <rpm/rpmdb.h>
@@ -22,11 +24,18 @@
 using std::string;
 using std::cout;
 using std::cerr;
+using std::cin;
 using std::endl;
 using std::ofstream;
 using std::vector;
 using std::unordered_map;
 using std::unordered_set;
+
+using std::optional;
+
+using std::filesystem::path;
+
+namespace fs = std::filesystem;
 
 static struct poptOption optionsTable[] = {
   {
@@ -37,6 +46,18 @@ static struct poptOption optionsTable[] = {
   POPT_AUTOHELP
   POPT_TABLEEND
 };
+
+optional<string> calculate_expected_specfile_path( string sgug_rse_git_root,
+					 string package_name ) {
+  path srgr_path = std::filesystem::path(sgug_rse_git_root);
+  path package_spec_path = srgr_path / "packages" / package_name / "SPECS" / (package_name + ".spec");
+  if( fs::exists(package_spec_path) ) {
+    return {fs::canonical(package_spec_path)};
+  }
+  else {
+    return {};
+  }
+}
 
 int main(int argc, char**argv)
 {
@@ -54,12 +75,46 @@ int main(int argc, char**argv)
 
   sgug_rpm::progress_printer pprinter;
 
+  string sgug_rse_git_root = "/usr/people/dan/Sources/GitClones/sgug-rse.git";
+  string sgug_rse_srpm_archive_root = "/usr/people/dan/Temp/srpmfetches0.0.6";
+
   cout << "# Reading spec files..." << endl;
 
-  sgug_rpm::read_rpmbuild_specfiles( popt_context,
-				     valid_specfiles,
-				     failed_specfiles,
-				     pprinter );
+  string curline;
+  for( string line; std::getline(cin, line); ) {
+    // Skip comments + empty lines
+    if( line.length() == 0 || line[0] == '#' ) {
+      continue;
+    }
+    // For each package, check we have
+    // a) a specfile
+    // b) an SRPM we can install that matches
+    string package_name = line;
+    optional<string> expected_specfile_path_opt =
+      calculate_expected_specfile_path( sgug_rse_git_root,
+					package_name );
+    if( !expected_specfile_path_opt ) {
+      cerr << "Missing spec for " << package_name << endl;
+      cerr << "Looked under " << sgug_rse_git_root << "/packages/" <<
+	package_name << "/SPECS/" << package_name << ".spec" << endl;
+      exit(EXIT_FAILURE);
+    }
+    string expected_specfile_path = *expected_specfile_path_opt;
+    sgug_rpm::specfile specfile;
+    if( verbose ) {
+      cout << "# Checking for spec at " << expected_specfile_path << endl;
+    }
+    rpmSpecFlags flags = (RPMSPEC_FORCE);
+    if( sgug_rpm::read_specfile( expected_specfile_path,
+				 flags,
+				 specfile,
+				 pprinter ) ) {
+      valid_specfiles.emplace_back( specfile );
+    }
+    else {
+      failed_specfiles.push_back( package_name );
+    }
+  }
 
   size_t num_specs = valid_specfiles.size();
   if( num_specs == 0 ) {
@@ -82,6 +137,9 @@ int main(int argc, char**argv)
       cout<< "#     " << failed_fn << endl;
     }
   }
+
+  exit(1);
+  // GOT HERE
 
   // Now we work out for each of the rpms
   // (a) If such an RPM is installed
