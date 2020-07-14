@@ -6,6 +6,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <filesystem>
+#include <optional>
 
 #include <rpm/rpmcli.h>
 #include <rpm/rpmdb.h>
@@ -31,15 +33,42 @@ using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 
+using std::filesystem::path;
+
+namespace fs = std::filesystem;
+
+static char * gitrootdir = NULL;
+
 static struct poptOption optionsTable[] = {
   {
     NULL, '\0', POPT_ARG_INCLUDE_TABLE, rpmcliAllPoptTable, 0,
     "Common options for all rpm modes and executables",
     NULL },
+  {
+    "gitroot",
+    'g',
+    POPT_ARG_STRING,
+    &gitrootdir,
+    0,
+    "RSE git repository directory containing releasepackages.lst",
+    NULL
+  },
   POPT_AUTOALIAS
   POPT_AUTOHELP
   POPT_TABLEEND
 };
+
+optional<string> calculate_expected_specfile_path( string sgug_rse_git_root,
+					 string package_name ) {
+  path srgr_path = std::filesystem::path(sgug_rse_git_root);
+  path package_spec_path = srgr_path / "packages" / package_name / "SPECS" / (package_name + ".spec");
+  if( fs::exists(package_spec_path) ) {
+    return {fs::canonical(package_spec_path)};
+  }
+  else {
+    return {};
+  }
+}
 
 int main(int argc, char**argv)
 {
@@ -53,6 +82,12 @@ int main(int argc, char**argv)
     exit(EXIT_FAILURE);
   }
 
+  // Check we have outputdir and gitrootdir
+  if( gitrootdir == NULL ) {
+    cerr << "gitrootdir must be passed" << endl;
+    exit(EXIT_FAILURE);
+  }
+  path gitrootdir_p = {gitrootdir};
   vector<string> spec_filenames;
 
   // Capture any explicit minimum rpms
@@ -67,30 +102,50 @@ int main(int argc, char**argv)
 
   cout << "# Reading spec files..." << endl;
 
-  rpmSpecFlags flags;
+  std::ifstream input( fs::canonical(gitrootdir_p / "releasepackages.lst") );
 
-  if( spec_filenames.size() > 0 ) {
-    for( const string & spec_file : spec_filenames ) {
-      sgug_rpm::specfile dest;
-      // Must reset rpm macros every time to be sure
-      // no global are remembered
-      popt_context.reset_rpm_macros();
-      if( sgug_rpm::read_specfile( spec_file, flags, dest, pprinter ) ) {
-	valid_specfiles.emplace_back(dest);
-      }
-      else {
-	failed_specfiles.push_back(spec_file);
-      }
-      pprinter.accept_progress();
+  vector<string> names_in;
+  string curline;
+  for( string line; std::getline(input, line); ) {
+    // Skip comments + empty lines
+    if( line.length() == 0 || line[0] == '#' ) {
+      continue;
     }
-    pprinter.reset();
+    // For each package, check we have
+    // a) a specfile
+    // b) an SRPM we can install that matches
+    string package_name = line;
+    names_in.push_back(package_name);
   }
-  else {
-    sgug_rpm::read_rpmbuild_specfiles( popt_context,
-				       flags,
-				       valid_specfiles,
-				       failed_specfiles,
-				       pprinter );
+  input.close();
+
+  for( string & package_name : names_in ) {
+    optional<string> expected_specfile_path_opt =
+      calculate_expected_specfile_path( gitrootdir_p,
+					package_name );
+    if( !expected_specfile_path_opt ) {
+      cerr << "Missing spec for " << package_name << endl;
+      cerr << "Looked under " << gitrootdir_p << "/packages/" <<
+	package_name << "/SPECS/" << package_name << ".spec" << endl;
+      exit(EXIT_FAILURE);
+    }
+    string expected_specfile_path = *expected_specfile_path_opt;
+    sgug_rpm::specfile specfile;
+    if( verbose ) {
+      cout << "# Checking for spec at " << expected_specfile_path << endl;
+    }
+    rpmSpecFlags flags = (RPMSPEC_FORCE);
+    if( sgug_rpm::read_specfile( expected_specfile_path,
+				 flags,
+				 specfile,
+				 pprinter ) ) {
+      valid_specfiles.emplace_back( specfile );
+    }
+    else {
+      failed_specfiles.push_back( package_name );
+    }
+    // Quick hack while testing, only do the first one
+    //break;
   }
 
   size_t num_specs = valid_specfiles.size();

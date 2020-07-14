@@ -188,7 +188,6 @@ int main(int argc, char**argv)
 
   std::ifstream input( fs::canonical(gitrootdir_p / "releasepackages.lst") );
 
-
   vector<string> names_in;
   string curline;
   for( string line; std::getline(input, line); ) {
@@ -202,6 +201,7 @@ int main(int argc, char**argv)
     string package_name = line;
     names_in.push_back(package_name);
   }
+  input.close();
 
   for( string & package_name : names_in ) {
     optional<string> expected_specfile_path_opt =

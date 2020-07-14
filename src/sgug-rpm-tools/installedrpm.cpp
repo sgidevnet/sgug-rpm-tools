@@ -103,6 +103,10 @@ namespace sgug_rpm {
 	      //	      cout << "Changing require from " << req << endl;
 	      req = req.substr(0,firstspace-namestart);
 	      //	      cout << "It is now " << req << endl;
+	      if( str_starts_with(req,"(") && !str_ends_with(req, ")") ) {
+		req = req.substr(1);
+		//		exit(EXIT_FAILURE);
+	      }
 	    }
 	    if( strncmp(req.c_str(), "rpmlib(", 7) == 0 ) {
 	      continue;
