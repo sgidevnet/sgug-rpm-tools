@@ -9,10 +9,12 @@ sgug_world_builder_SOURCES=				\
 	installedrpm.hpp				\
 	sgug_dep_engine.hpp				\
 	specfile.hpp					\
+	standalonerpm.hpp				\
+	helpers.cpp					\
+	installedrpm.cpp				\
 	sgug_world_builder.cpp				\
 	specfile.cpp					\
-	installedrpm.cpp				\
-	helpers.cpp					\
+	standalonerpm.cpp				\
 	$(NULL)
 
 sgug_minimal_computer_SOURCES=				\
@@ -21,11 +23,13 @@ sgug_minimal_computer_SOURCES=				\
 	installedrpm.hpp				\
 	sgug_dep_engine.hpp				\
 	specfile.hpp					\
+	standalonerpm.hpp				\
+	helpers.cpp					\
+	installedrpm.cpp				\
+	sgug_dep_engine.cpp				\
 	sgug_minimal_computer.cpp			\
 	specfile.cpp					\
-	installedrpm.cpp				\
-	helpers.cpp					\
-	sgug_dep_engine.cpp				\
+	standalonerpm.cpp				\
 	$(NULL)
 
 AM_CFLAGS=						\

@@ -66,6 +66,11 @@ namespace sgug_rpm {
       0 == str.compare(str.size()-suf.size(), suf.size(), suf);
   }
 
+  inline bool str_starts_with( const std::string & str, const std::string & pre ) {
+    return str.size() >= pre.size() &&
+      0 == str.compare(0, pre.size(), pre);
+  }
+
   std::optional<std::pair<std::string,std::string> >
   find_package_providing_file( const std::string & required );
   std::optional<std::pair<std::string,std::string> >
