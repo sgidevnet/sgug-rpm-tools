@@ -260,16 +260,26 @@ int main(int argc, char**argv)
   cout << "# Checking availability of SRPMs for packages..." << endl;
   unordered_map<string,string> package_to_srpm_map;
 
+  vector<string> missing_srpms;
+
   for( const sgug_rpm::specfile & specfile : valid_specfiles ) {
     const string & srpm_name = specfile.get_name();
     cout << "# Looking for srpm " << srpm_name << endl;
     optional<string> found_srpm_opt =
       find_srpm_for_package( verbose, inputsrpm_p, srpm_name );
     if( !found_srpm_opt ) {
-      cerr << "Unable to find SRPM for " << srpm_name << endl;
-      exit(EXIT_FAILURE);
+      missing_srpms.push_back( srpm_name );
     }
-    package_to_srpm_map[srpm_name] = *found_srpm_opt;
+    else {
+      package_to_srpm_map[srpm_name] = *found_srpm_opt;
+    }
+  }
+
+  if( missing_srpms.size() > 0 ) {
+    for( const string & missing_srpm : missing_srpms ) {
+      cerr << "Unable to find SRPM for " << missing_srpm << endl;
+    }
+    exit(EXIT_FAILURE);
   }
 
   cout << "# Writing worldrebuilder.sh..." << endl;
