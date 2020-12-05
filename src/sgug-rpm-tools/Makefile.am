@@ -10,6 +10,7 @@ sgug_world_builder_SOURCES=				\
 	sgug_dep_engine.hpp				\
 	specfile.hpp					\
 	standalonerpm.hpp				\
+	dependencyset.cpp				\
 	helpers.cpp					\
 	installedrpm.cpp				\
 	sgug_world_builder.cpp				\
@@ -24,6 +25,7 @@ sgug_minimal_computer_SOURCES=				\
 	sgug_dep_engine.hpp				\
 	specfile.hpp					\
 	standalonerpm.hpp				\
+	dependencyset.cpp				\
 	helpers.cpp					\
 	installedrpm.cpp				\
 	sgug_dep_engine.cpp				\

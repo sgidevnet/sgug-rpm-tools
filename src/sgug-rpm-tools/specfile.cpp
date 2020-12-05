@@ -58,11 +58,11 @@ namespace sgug_rpm {
   specfile::specfile( string filepath,
 		      string name,
 		      vector<string> packages,
-		      unordered_map<string,vector<string>> package_deps )
+		      unordered_map<string,vector<string>> build_deps )
     : _filepath(filepath),
       _name(name),
       _packages(packages),
-      _package_deps(package_deps) {}
+      _build_deps(build_deps) {}
 
   bool read_specfile( const string & path,
 		      rpmSpecFlags flags,
@@ -81,7 +81,7 @@ namespace sgug_rpm {
     rpmSpecPkg spec_pkg;
     bool first=true;
     vector<string> packages;
-    unordered_map<string, vector<string>> package_deps;
+    unordered_map<string, vector<string>> build_deps;
     while((spec_pkg = specpkgiter_h.next()) != NULL ) {
       
       Header spec_header = rpmSpecPkgHeader(spec_pkg);
@@ -92,10 +92,10 @@ namespace sgug_rpm {
 	first = false;
       }
       packages.push_back(pkg_name);
-      package_deps.emplace(pkg_name, vector<string>());
+      build_deps.emplace(pkg_name, vector<string>());
     }
 
-    dest = specfile{ path, spec_name, packages, package_deps };
+    dest = specfile{ path, spec_name, packages, build_deps };
 
     return true;
   }

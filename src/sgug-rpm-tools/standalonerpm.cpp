@@ -32,12 +32,23 @@ using std::unordered_map;
 namespace sgug_rpm {
 
   standalonerpm::standalonerpm( string name,
-				string rpmfile )
+				string rpmfile,
+				vector<string> provides,
+				vector<string> requires )
     : _name(name),
-      _rpmfile(rpmfile) {}
+      _rpmfile(rpmfile),
+      _provides(provides),
+      _requires(requires) {}
 
   bool read_standalonerpm( const bool verbose, const string & rpmpath,
-			  standalonerpm & dest )
+			   standalonerpm & dest )
+  {
+    return read_standalonerpm( verbose, rpmpath, dest, false );
+  }
+
+  bool read_standalonerpm( const bool verbose, const string & rpmpath,
+			   standalonerpm & dest,
+			   const bool read_deps )
   {
     bool returnCode = false;
     Header h, sig;
@@ -61,7 +72,16 @@ namespace sgug_rpm {
 
     const char * name = headerGetString(h, RPMTAG_NAME);
 
-    dest = {string(name), rpmpath};
+    vector<string> provides;
+    vector<string> requires;
+
+    if( read_deps ) {
+      sgug_rpm::rpmds_read_deps( h,
+				 provides,
+				 requires );
+    }
+
+    dest = {string(name), rpmpath, provides, requires };
 
     returnCode = true;
     

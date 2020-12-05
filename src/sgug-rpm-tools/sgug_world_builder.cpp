@@ -42,6 +42,7 @@ namespace fs = std::filesystem;
 static char * inputdir = NULL;
 static char * outputdir = NULL;
 static char * gitrootdir = NULL;
+static int partial_allowed = 0;
 
 static struct poptOption optionsTable[] = {
   {
@@ -54,7 +55,7 @@ static struct poptOption optionsTable[] = {
     POPT_ARG_STRING,
     &inputdir,
     0,
-    "Input directory where SRPM packages may be found",
+    "Input dir with an SRPM subdirectory",
     NULL
   },
   {
@@ -63,7 +64,7 @@ static struct poptOption optionsTable[] = {
     POPT_ARG_STRING,
     &outputdir,
     0,
-    "Output directory where SRPM and RPM files will be placed",
+    "Output dir for SRPM and RPM output files",
     NULL
   },
   {
@@ -72,7 +73,16 @@ static struct poptOption optionsTable[] = {
     POPT_ARG_STRING,
     &gitrootdir,
     0,
-    "RSE git repository directory containing releasepackages.lst",
+    "RSE git repo dir containing releasepackages.lst",
+    NULL
+  },
+  {
+    "partial",
+    'p',
+    POPT_ARG_NONE,
+    &partial_allowed,
+    0,
+    "Accept partial SRPM/spec availability (do NOT use this when performing a complete build)",
     NULL
   },
   POPT_AUTOALIAS
@@ -168,6 +178,12 @@ int main(int argc, char**argv)
   path gitrootdir_p = {gitrootdir};
 
   bool verbose = popt_context.verbose;
+  bool partial = partial_allowed != 0;
+
+  if (partial) {
+    cout << "WARNING: Partial graphs are allowed. This should not be " <<
+      "used when performing a full world build" << endl;
+  }
 
   sgug_rpm::progress_printer pprinter;
 
@@ -175,14 +191,6 @@ int main(int argc, char**argv)
   path buildprogress_p = outputdir_p / "PROGRESS";
   path outputsrpm_p = outputdir_p / "SRPMS";
   path outputrpm_p = outputdir_p / "RPMS";
-
-  /*
-  string sgug_rse_git_root = "/usr/people/dan/Sources/GitClones/sgug-rse.git";
-  string build_progress_dir = "/usr/people/dan/Temp/build0.0.6round2/PROGRESS";
-  string sgug_rse_srpm_archive_root = "/usr/people/dan/Temp/build0.0.6round1/SRPMS";
-  string sgug_rse_srpm_output_root = "/usr/people/dan/Temp/build0.0.6round2/SRPMS";
-  string sgug_rse_rpm_output_root = "/usr/people/dan/Temp/build0.0.6round2/RPMS";
-  */
 
   cout << "# Reading spec files..." << endl;
 
@@ -275,7 +283,9 @@ int main(int argc, char**argv)
     }
   }
 
-  if( missing_srpms.size() > 0 ) {
+  // If we aren't allowing partial graphs of dependencies
+  // we will warn and bail about the missing SRPMs
+  if( !partial && missing_srpms.size() > 0 ) {
     for( const string & missing_srpm : missing_srpms ) {
       cerr << "Unable to find SRPM for " << missing_srpm << endl;
     }
@@ -371,6 +381,9 @@ int main(int argc, char**argv)
 
   for( const sgug_rpm::specfile & spec : specs_to_rebuild ) {
     const string & name = spec.get_name();
+    if( package_to_srpm_map.find(name) == package_to_srpm_map.end() ) {
+      continue;
+    }
     const string & srpm = package_to_srpm_map[name];
     worldrebuilderfile << "doPackageBuild '" << name << "' '" <<
       srpm << "'" << endl;

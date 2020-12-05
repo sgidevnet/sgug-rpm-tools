@@ -214,13 +214,16 @@ int main(int argc, char**argv)
   special_packages.emplace("rpm");
   special_packages.emplace("sudo");
   special_packages.emplace("vim-minimal");
-  special_packages.emplace("git-all");
   special_packages.emplace("tar");
   special_packages.emplace("bzip2");
   special_packages.emplace("gzip");
   special_packages.emplace("xz");
   special_packages.emplace("unzip");
-  special_packages.emplace("sgug-getopt");
+  /*special_packages.emplace("sgugshell");*/
+  special_packages.emplace("microdnf");
+  special_packages.emplace("tdnf");
+  /*special_packages.emplace("git-all");*/
+  /*special_packages.emplace("sgug-getopt");*/
 
   vector<sgug_rpm::resolvedrpm> resolved_rpms =
     sgug_rpm::flatten_sort_packages( rpms_to_resolve, 

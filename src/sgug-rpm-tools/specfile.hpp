@@ -16,18 +16,18 @@ namespace sgug_rpm {
     std::string _name;
 
     std::vector<std::string> _packages;
-    std::unordered_map<std::string,std::vector<std::string>> _package_deps;
+    std::unordered_map<std::string,std::vector<std::string>> _build_deps;
 
   public:
     specfile() {};
     specfile( std::string filepath,
 	      std::string name,
 	      std::vector<std::string> packages,
-	      std::unordered_map<std::string,std::vector<std::string>> package_deps );
+	      std::unordered_map<std::string,std::vector<std::string>> build_deps );
     const std::string & get_filepath() const { return _filepath; };
     const std::string & get_name() const { return _name; };
     const std::vector<std::string> & get_packages() const { return _packages; };
-    const std::unordered_map<std::string,std::vector<std::string>> & get_package_deps() const { return _package_deps; };
+    const std::unordered_map<std::string,std::vector<std::string>> & get_build_deps() const { return _build_deps; };
   };
 
   bool read_specfile( const std::string & path,
