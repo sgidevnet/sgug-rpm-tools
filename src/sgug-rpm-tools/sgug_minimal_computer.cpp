@@ -220,10 +220,13 @@ int main(int argc, char**argv)
   special_packages.emplace("xz");
   special_packages.emplace("unzip");
   /*special_packages.emplace("sgugshell");*/
+  special_packages.emplace("dnf-data");
   special_packages.emplace("microdnf");
   special_packages.emplace("tdnf");
   /*special_packages.emplace("git-all");*/
   /*special_packages.emplace("sgug-getopt");*/
+
+  vector<string> missing_deps;
 
   vector<sgug_rpm::resolvedrpm> resolved_rpms =
     sgug_rpm::flatten_sort_packages( rpms_to_resolve, 
@@ -236,6 +239,7 @@ int main(int argc, char**argv)
 					 return false;
 				       }
 				     },
+				     missing_deps,
 				     pprinter );
 
   if( verbose ) {
@@ -259,8 +263,14 @@ int main(int argc, char**argv)
     }
   }
 
-  cout << "Writing leaveinstalled.txt and removeexisting.sh results." <<
+  cout << "Writing output files..." <<
     endl;
+
+  ofstream missingdepsfile;
+  missingdepsfile.open("missingdeps.txt");
+  for( auto & md : missing_deps ) {
+    missingdepsfile << md << endl;
+  }
 
   ofstream leaveinstalledfile;
   leaveinstalledfile.open("leaveinstalled.txt");
@@ -308,6 +318,7 @@ int main(int argc, char**argv)
 
   removeexistingfile.close();
   leaveinstalledfile.close();
+  missingdepsfile.close();
 
   return 0;
 }

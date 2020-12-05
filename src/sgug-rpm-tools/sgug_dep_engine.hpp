@@ -33,6 +33,7 @@ namespace sgug_rpm {
 
   std::vector<resolvedrpm> flatten_sort_packages( std::vector<installedrpm> & rpms_to_resolve,
 						  const std::function<bool (const std::string&)> & special_strategy,
+						  std::vector<std::string> & missing_deps_out,
 						  progress_printer & pprinter );
 }
 

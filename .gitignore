@@ -41,3 +41,4 @@ worldrebuilder.sh
 src/sgug-rpm-tools/sgug_minimal_computer
 leaveinstalled.txt
 removeexisting.sh
+missingdeps.txt

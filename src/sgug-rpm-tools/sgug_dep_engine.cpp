@@ -11,6 +11,7 @@
 #include <utility>
 
 #include <iostream>
+#include <sstream>
 
 using std::function;
 using std::optional;
@@ -18,6 +19,7 @@ using std::pair;
 using std::reference_wrapper;
 using std::stack;
 using std::string;
+using std::stringstream;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -27,7 +29,9 @@ using std::cout;
 
 namespace sgug_rpm {
 
-  static optional<uint32_t> recursive_flatten_deps( resolvedrpm & driving_pkg,
+  static optional<uint32_t> recursive_flatten_deps(
+					  vector<string> & missing_deps_out,
+					  resolvedrpm & driving_pkg,
 					  vector<resolvedrpm> & known_packages,
 					  unordered_map<string,std::reference_wrapper<resolvedrpm> > & pid_to_package,
 					  unordered_map<string,std::reference_wrapper<resolvedrpm> > & provides_to_package,
@@ -117,9 +121,9 @@ namespace sgug_rpm {
       }
 
       if( !provider_ref_opt ) {
-	cout << "Package " << pkg_name << " has missing requires: " << pkg_require <<
-	  endl;
-	//	exit(-1);
+	stringstream missing_deps_buf;
+	missing_deps_buf << "Package " << pkg_name << " has missing requires: " << pkg_require;
+	missing_deps_out.push_back(missing_deps_buf.str());
 	continue;
       }
 
@@ -137,7 +141,8 @@ namespace sgug_rpm {
       //      cout << "It is " << child_pkg.get_package().get_name() << endl;
 
       optional<uint32_t> child_sequence_no_opt =
-	recursive_flatten_deps( driving_pkg,
+	recursive_flatten_deps( missing_deps_out,
+				driving_pkg,
 				known_packages,
 				pid_to_package,
 				provides_to_package,
@@ -175,6 +180,7 @@ namespace sgug_rpm {
 
   vector<resolvedrpm> flatten_sort_packages( vector<installedrpm> & rpms_to_resolve,
 					     const function<bool (const string&)> & special_strategy,
+					     vector<string> & missing_deps_out,
 					     progress_printer & pprinter )
   {
     vector<resolvedrpm> retval;
@@ -204,7 +210,8 @@ namespace sgug_rpm {
       if( special_strategy(pkg_name) ) {
 	vector<string> pkg_resolution_stack;
 	//      cout << "do erfp on " << pkg.get_package().get_name() << endl;
-	recursive_flatten_deps( pkg,
+	recursive_flatten_deps( missing_deps_out,
+				pkg,
 				retval,
 				pid_to_package,
 				provides_to_package,
@@ -223,7 +230,8 @@ namespace sgug_rpm {
     for( resolvedrpm & pkg : retval ) {
       vector<string> pkg_resolution_stack;
       //      cout << "do erfp on " << pkg.get_package().get_name() << endl;
-      recursive_flatten_deps( pkg,
+      recursive_flatten_deps( missing_deps_out,
+			      pkg,
 			      retval,
 			      pid_to_package,
 			      provides_to_package,
