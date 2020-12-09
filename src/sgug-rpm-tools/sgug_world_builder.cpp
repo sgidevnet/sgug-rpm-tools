@@ -340,7 +340,7 @@ int main(int argc, char**argv)
   worldrebuilderfile << "rpmbuildPackage () {" << endl;
   worldrebuilderfile << "    packageName=$1" << endl;
   worldrebuilderfile << "    cd ~/rpmbuild/SPECS" << endl;
-  worldrebuilderfile << "    rpmbuild -ba \"$packageName.spec\" --nocheck" << endl;
+  worldrebuilderfile << "    rpmbuild -ba \"$packageName.spec\" --nocheck 1>$build_progress_dir/$packageName.log 2>&1" << endl;
   worldrebuilderfile << "    rpmrc=$?" << endl;
   worldrebuilderfile << "    cd $ORIG_WD" << endl;
   worldrebuilderfile << "    return $rpmrc" << endl;
