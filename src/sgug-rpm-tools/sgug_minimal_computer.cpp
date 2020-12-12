@@ -219,7 +219,7 @@ int main(int argc, char**argv)
   special_packages.emplace("gzip");
   special_packages.emplace("xz");
   special_packages.emplace("unzip");
-  /*special_packages.emplace("sgugshell");*/
+  special_packages.emplace("sgugshell");
   special_packages.emplace("dnf-data");
   special_packages.emplace("microdnf");
   special_packages.emplace("tdnf");
