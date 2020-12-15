@@ -1,6 +1,6 @@
 AC_PREREQ(2.65)
 AC_INIT([sgug-rpm-tools],
-        [0.1.9],
+        [0.2.0],
         [daniel.hams@gmail.com])
 
 AC_SUBST(ACLOCAL_AMFLAGS, "-I macros")
