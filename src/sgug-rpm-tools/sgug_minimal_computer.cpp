@@ -221,6 +221,8 @@ int main(int argc, char**argv)
   special_packages.emplace("unzip");
   special_packages.emplace("openssh-clients");
   special_packages.emplace("libiconv");
+  special_packages.emplace("info");
+  special_packages.emplace("desktop-file-utils");
 
   special_packages.emplace("sgugshell");
 
